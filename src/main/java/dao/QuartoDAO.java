@@ -5,7 +5,15 @@ import model.Quarto;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class QuartoDAO {
+	
+	private Connection conn;
+	
+	public QuartoDAO(Connection conn) {
+		this.conn = conn;
+	}
+	
     public void cadastrar(Quarto quarto) throws SQLException{
         String sql = "INSERT INTO quartos (numero, tipo, valor_diaria, capacidade_maxima, status) VALUES (?, ?, ?, ?, ?)";
         
@@ -21,6 +29,40 @@ public class QuartoDAO {
             stmt.executeUpdate();
         }
     }
+    
+    public int atualizar(Quarto quarto) throws SQLException{
+    	PreparedStatement st = null;
+    	try {
+    		
+    		st = conn.prepareStatement("UPDATE quartos SET numero = ?,tipo = ?,capacidade_maxima = ?, valor_diaria = ?, status = ? WHERE codigo = ? ");
+    		st.setInt(1, quarto.getNumero());
+    		st.setString(2, quarto.getTipo());
+    		st.setInt(3, quarto.getCapacidadeMaxima());
+    		st.setDouble(4, quarto.getValorDiaria());
+    		st.setString(5, quarto.getStatus());
+    		st.setInt(6, quarto.getCodigo());
+    		
+    		return st.executeUpdate();
+    		
+    	}finally {
+    		BancoDados.finalizarStatement(st);
+			BancoDados.fecharConexao();
+		}
+    }
+    
+    public int excluir(int id) throws SQLException{
+    	PreparedStatement st = null;
+    	try {
+    		st = conn.prepareStatement("DELETE FROM quartos WHERE codigo = ?");
+    		st.setInt(1, id);
+    		
+    		return st.executeUpdate();
+    	}finally {
+    		BancoDados.finalizarStatement(st);
+    		BancoDados.fecharConexao();
+    	}
+    }
+    
     public List<Quarto> buscar(String valor, String tipoBusca) throws SQLException{
         List<Quarto> lista = new ArrayList<>();
         String sql = "SELECT * FROM quartos WHERE ";
@@ -57,4 +99,40 @@ public class QuartoDAO {
         }
         return lista;
     }
+    
+    public Quarto buscarPorCod(int codigo) throws SQLException{
+    	PreparedStatement st = null;
+		ResultSet rs = null;
+
+		try {
+
+			st = conn.prepareStatement("select * from quartos where codigo = ?");
+			st.setInt(1, codigo);
+
+			rs = st.executeQuery();
+
+			if (rs.next()) {
+
+				Quarto q = new Quarto();
+
+				q.setCodigo(rs.getInt("codigo"));
+				q.setNumero(rs.getInt("numero"));
+				q.setTipo(rs.getString("tipo"));
+				q.setCapacidadeMaxima(rs.getInt("capacidade_maxima"));
+				q.setValorDiaria(rs.getDouble("valor_diaria"));
+				q.setStatus(rs.getString("status"));
+
+				return q;
+			}
+
+			return null;
+
+		} finally {
+
+			BancoDados.finalizarStatement(st);
+			BancoDados.finalizarResultSet(rs);
+			BancoDados.fecharConexao();;
+		}
+    }
+    
 }

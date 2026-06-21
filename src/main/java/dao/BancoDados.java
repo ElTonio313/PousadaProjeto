@@ -2,7 +2,9 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class BancoDados{
     
@@ -16,7 +18,6 @@ public class BancoDados{
         try{
             if (conexao == null || conexao.isClosed()){
                 conexao = DriverManager.getConnection(URL, USER, PASSWORD);
-                System.out.println("SUCESSO: Conexão com o banco de dados estabelecida!");
             }
         }catch (SQLException e){
             System.err.println("ERRO: Não foi possível conectar ao banco de dados.");
@@ -37,10 +38,19 @@ public class BancoDados{
         }
     }
     
-    public static void main(String[] args){
-        Connection conn = BancoDados.getConexao();
-        if (conn != null){
-            BancoDados.fecharConexao();
-        }
-    }
+    public static void finalizarStatement(Statement st) throws SQLException {
+
+		if (st != null) {
+
+			st.close();
+		}
+	}
+    
+    public static void finalizarResultSet(ResultSet rs) throws SQLException {
+
+		if (rs != null) {
+
+			rs.close();
+		}
+	}
 }
