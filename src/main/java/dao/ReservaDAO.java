@@ -107,6 +107,25 @@ public class ReservaDAO {
         return lista;
     }
 
+    
+    public List<Reserva> listarReservasAtivasSemHospedagem() throws SQLException {
+        List<Reserva> lista = new ArrayList<>();
+        String sql = montarSelectBase()
+                   + " WHERE r.status = 'ATIVA' "
+                   + "AND NOT EXISTS (SELECT 1 FROM hospedagens h WHERE h.reserva_codigo = r.codigo) "
+                   + "ORDER BY r.data_checkin ASC";
+
+        try (Connection conn = BancoDados.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                lista.add(montarReserva(rs));
+            }
+        }
+        return lista;
+    }
+
     private String montarSelectBase() {
         return "SELECT r.codigo AS reserva_codigo, r.data_checkin, r.data_checkout, "
              + "r.quantidade_hospedes, r.status AS reserva_status, "
